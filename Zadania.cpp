@@ -52,6 +52,10 @@ int Task::ShowValueOfVariable(char FirstLetter){
     {
         return PositionInQueue;
     }
+    else if(FirstLetter=='H')
+    {
+        return TimeOfHandover;
+    }
     else
     {
     std::cout <<" Wrong choice of parametr in Task::ShowValueOfVariable";
@@ -64,4 +68,9 @@ int Task::ShowValueOfVariable(char FirstLetter){
 
 void Task::AddPosition(int position){
     PositionInQueue=position;
+}
+
+
+void Task::AddTHandober(int Time1){
+    TimeOfHandover=Time1;
 }

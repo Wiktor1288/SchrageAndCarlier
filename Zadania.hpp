@@ -29,6 +29,7 @@ public:
     void AddPosition(int position);
     void AddStartMoment(int TimeTerminationPreviousTask);
     void AddTermiantion();
+    void AddTHandober(int Time1);
     int ShowValueOfVariable(char FirstLetter);
     
 
