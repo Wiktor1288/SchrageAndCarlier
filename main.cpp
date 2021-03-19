@@ -19,7 +19,7 @@ int LookforMaxH(vector<Task> TaskVector);
 void ShowInformation(shared_ptr <Task[]> Tasks_1, shared_ptr <int []> TabOrder, int size_1);
 shared_ptr <int []>  SchrageAlgorithm(shared_ptr <Task[]> Tasks_1, shared_ptr <int []> TabOrder, int size_1);
 shared_ptr <int []>  SchrageAlgorithmQueue(shared_ptr <Task[]> Tasks_1, shared_ptr <int []> TabOrder, int size_1);
-
+void SchragePMTN(shared_ptr <Task[]> Tasks_1, int size_1);
 
 
 int main(){
@@ -55,6 +55,8 @@ int main(){
     Cmaxx=ObjectiveFunction(TaskTab,TabOrder,Number);
     ShowInformation(TaskTab,TabOrder,Number);
     cout << endl << endl << "Cmax:  " << Cmaxx << endl;
+    SchragePMTN(TaskTab,Number);
+
     return 0;
 }
 
@@ -214,6 +216,7 @@ shared_ptr <int []>  SchrageAlgorithmQueue(shared_ptr <Task[]> Tasks_1, shared_p
     auto k{0}, t{0}, i{1};
     QueueOfTimeP Nset;
     QueueOfTimeH Gset;
+    
     for(i=0; i<size_1; i++){
         Nset.push(Tasks_1[i]);
     }
@@ -240,4 +243,63 @@ shared_ptr <int []>  SchrageAlgorithmQueue(shared_ptr <Task[]> Tasks_1, shared_p
         }
     }
     return TabOrder;
+}
+
+
+void  SchragePMTN(shared_ptr <Task[]> Tasks_1, int size_1){
+    auto k{0}, t{0}, i{1}, Cmax{0};
+    QueueOfTimeP Nset;
+    QueueOfTimeH Gset;
+    vector <int> TabOrder, Tabp;
+    for(i=0; i<size_1; i++){
+        Nset.push(Tasks_1[i]);
+    }
+    
+    Task TaskForHelp1=Nset.top();
+    Task TaskForHelp2=Nset.top();
+   
+
+    while(Gset.size()!=0 || Nset.size()!=0){
+        while( Nset.size()!=0 && (TaskForHelp1=Nset.top()).ShowValueOfVariable('P')<=t){
+            Gset.push(TaskForHelp1);
+            Nset.pop();
+            if(TaskForHelp1.ShowValueOfVariable('H')> TaskForHelp2.ShowValueOfVariable('H')){
+                TaskForHelp2.AddTExecution(t-TaskForHelp1.ShowValueOfVariable('P'));
+                t=TaskForHelp1.ShowValueOfVariable('P');
+                
+                if (TaskForHelp2.ShowValueOfVariable('E')>0){
+                    Gset.push(TaskForHelp2);
+                } 
+            }
+            
+        }
+        if(Gset.size()!=0){
+            TaskForHelp2=Gset.top();
+            TabOrder.push_back(TaskForHelp2.ShowValueOfVariable('I'));
+            Tabp.push_back(t);
+            t+=TaskForHelp2.ShowValueOfVariable('E');
+            Gset.pop();
+            k+=1;
+            Cmax=max(Cmax,t+TaskForHelp2.ShowValueOfVariable('H'));
+        }
+        else{
+            t=(TaskForHelp1=Nset.top()).ShowValueOfVariable('P');
+        }
+    }
+    
+    int ka=TabOrder.size();
+    int ak=Tabp.size();
+    
+    cout << endl <<"Schrage z przerwaniami" << endl << "ID: ";
+    for(i=0; i<ka; i++)
+    {
+        cout<< TabOrder[i] <<" | ";
+    }
+    
+    cout <<endl << "Przerwanie: ";
+    for(i=0; i<ak; i++)
+    {
+        cout<< Tabp[i] << " | ";
+    }
+    cout << endl << "Cmax: " <<Cmax << endl;
 }
