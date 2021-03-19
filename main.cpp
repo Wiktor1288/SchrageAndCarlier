@@ -1,15 +1,24 @@
 #include <iostream>
 #include <memory>
 #include <vector>
+#include <queue>
 #include "RandomNumberGenerator.h"
+#include "compareTasks.hpp"
 #include "Zadania.hpp"
 using namespace std;
+
+typedef std::priority_queue < Task, std::vector < Task >, TaskComparingTimeP > QueueOfTimeP;
+typedef std::priority_queue < Task, std::vector < Task >, TaskComparingTimeH > QueueOfTimeH;
+
+
+
 void AddTasksParametrs(RandomNumberGenerator Random_2, shared_ptr <Task[]> Tasks_1, int size_1);
 int ObjectiveFunction(shared_ptr <Task[]> Tasks_1, shared_ptr <int []> TabOrder, int size_1);
 int LookforMinR(vector<Task> TaskVector);
 int LookforMaxH(vector<Task> TaskVector);
 void ShowInformation(shared_ptr <Task[]> Tasks_1, shared_ptr <int []> TabOrder, int size_1);
 shared_ptr <int []>  SchrageAlgorithm(shared_ptr <Task[]> Tasks_1, shared_ptr <int []> TabOrder, int size_1);
+shared_ptr <int []>  SchrageAlgorithmQueue(shared_ptr <Task[]> Tasks_1, shared_ptr <int []> TabOrder, int size_1);
 
 
 
@@ -40,7 +49,12 @@ int main(){
     ShowInformation(TaskTab,TabOrder,Number);
     cout << endl << endl << "Cmax:  " << Cmaxx << endl;
 
+
     cout <<endl;
+    TabOrder=SchrageAlgorithmQueue(TaskTab,TabOrder,Number);
+    Cmaxx=ObjectiveFunction(TaskTab,TabOrder,Number);
+    ShowInformation(TaskTab,TabOrder,Number);
+    cout << endl << endl << "Cmax:  " << Cmaxx << endl;
     return 0;
 }
 
@@ -54,12 +68,12 @@ void AddTasksParametrs(RandomNumberGenerator Random_2, shared_ptr <Task[]> Tasks
         Tasks_1[i].AddTExecution(Random_2.nextInt(1,29));
         A=A+Tasks_1[i].ShowValueOfVariable('E');
     }
-    
+    X=A;
     for ( i = 0; i < size_1; i++){
         Tasks_1[i].AddTPripare(Random_2.nextInt(1,A));
     }
     for ( i = 0; i < size_1; i++){
-        Tasks_1[i].AddTHandober(Random_2.nextInt(1,A));
+        Tasks_1[i].AddTHandober(Random_2.nextInt(1,X));
     }
 }
 
@@ -121,7 +135,7 @@ void ShowInformation(shared_ptr <Task[]> TaskTab, shared_ptr <int []> TabOrder, 
 
 shared_ptr <int []>  SchrageAlgorithm(shared_ptr <Task[]> Tasks_1, shared_ptr <int []> TabOrder, int size_1){
 
-    auto k{0}, t{0}, i{1}, rmin{0},j{0};
+    auto k{0}, t{0}, i{1},j{0};
     vector <Task> Gset;
     vector <Task> Nset;
     
@@ -162,11 +176,12 @@ shared_ptr <int []>  SchrageAlgorithm(shared_ptr <Task[]> Tasks_1, shared_ptr <i
 
 int LookforMinR(vector<Task> TaskVector){
     auto i{0}, minValue{0},x{0};
+    int sizeV=TaskVector.size();
     minValue=TaskVector[0].ShowValueOfVariable('P');
-    for(i=0; i<TaskVector.size(); i++)
+    for(i=0; i<sizeV; i++)
        minValue = min(minValue,TaskVector[i].ShowValueOfVariable('P'));
 
-    for(i=0; i<TaskVector.size(); i++){
+    for(i=0; i<sizeV; i++){
         if(TaskVector[i].ShowValueOfVariable('P')==minValue){
             x=i;
             break;
@@ -179,11 +194,12 @@ int LookforMinR(vector<Task> TaskVector){
 
 int LookforMaxH(vector<Task> TaskVector){
     auto i{0}, maxValue{0},x{0};
+    int sizeV=TaskVector.size();
     maxValue=TaskVector[0].ShowValueOfVariable('H');
-    for(i=1; i<TaskVector.size(); i++)
+    for(i=1; i<sizeV; i++)
        maxValue = max(maxValue ,TaskVector[i].ShowValueOfVariable('H'));
 
-    for(i=0; i<TaskVector.size(); i++){
+    for(i=0; i<sizeV; i++){
         if(TaskVector[i].ShowValueOfVariable('H')==maxValue){
             x=i;
             break;
@@ -191,4 +207,37 @@ int LookforMaxH(vector<Task> TaskVector){
     }
 
     return x;
+}
+
+
+shared_ptr <int []>  SchrageAlgorithmQueue(shared_ptr <Task[]> Tasks_1, shared_ptr <int []> TabOrder, int size_1){
+    auto k{0}, t{0}, i{1};
+    QueueOfTimeP Nset;
+    QueueOfTimeH Gset;
+    for(i=0; i<size_1; i++){
+        Nset.push(Tasks_1[i]);
+    }
+    
+   Task TaskForHelp1=Nset.top();
+   Task TaskForHelp2=Nset.top();
+    
+
+    while(Gset.size()!=0 || Nset.size()!=0){
+        while( Nset.size()!=0 && TaskForHelp1.ShowValueOfVariable('P')<=t){
+            Gset.push(TaskForHelp1);
+            Nset.pop();
+            TaskForHelp1=Nset.top();
+        }
+        if(Gset.size()!=0){
+            TaskForHelp2=Gset.top();
+            TabOrder[k]=TaskForHelp2.ShowValueOfVariable('I')-1;
+            t+=TaskForHelp2.ShowValueOfVariable('E');
+            Gset.pop();
+            k+=1;
+        }
+        else{
+            t=TaskForHelp1.ShowValueOfVariable('P');
+        }
+    }
+    return TabOrder;
 }
